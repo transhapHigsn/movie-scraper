@@ -12,6 +12,8 @@ urlpatterns = [
         views.fetch_movie_by_name,
         name="fetch_movie_by_name",
     ),
+    path("add_movie_to_list", views.add_movie_to_list, name="add_movie"),
+    path("get_movie_list/<str:list_name>", views.get_movie_list, name="get_movie_list"),
     path("user_signup", views.signup, name="signup"),
     path("login", views.login, name="login"),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Movie
+from .models import User, Movie, UserMovies
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -17,7 +17,20 @@ class UrlSerializer(serializers.Serializer):
     url = serializers.CharField(required=True, max_length=256)
 
 
+class MovieListSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True, max_length=200)
+    list_name = serializers.CharField(required=True, max_length=30)
+
+
 class MovieSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Movie
         fields = ["name", "year", "rating", "poster_url", "movie_info_url"]
+
+
+class UserMovieSerializer(serializers.ModelSerializer):
+    movies = MovieSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = UserMovies
+        fields = ["list_type", "movies"]

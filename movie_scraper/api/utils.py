@@ -15,7 +15,7 @@ def create_token(email):
     encoded_jwt = jwt.encode(
         {
             "email": email,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=30 * 60),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=3 * 60 * 60),
         },
         SECRET_KEY,
         algorithm="HS256",

@@ -5,9 +5,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Movie
+from .models import Movie, UserMovies
 from .serializers import (
+    MovieListSerializer,
     MovieSerializer,
+    UserMovieSerializer,
     UserSerializer,
     UserLoginSerializer,
     UrlSerializer,
@@ -125,3 +127,89 @@ def fetch_movie_by_name(request, name):
 
     serializer = MovieSerializer(movie)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+def add_movie_to_list(request):
+    token = request.headers.get("jwt")
+    if not token:
+        return Response(
+            {"status": "error", "message": "Auth token required."}, status=412
+        )
+
+    token_resp = decode_token(token=token)
+    if token_resp["status"] == "error":
+        return Response(token_resp, status=402)
+
+    data = JSONParser().parse(request)
+    serializer = MovieListSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(
+            {"status": "error", "message": "", "errors": serializer.errors}, status=402
+        )
+
+    list_name = serializer.validated_data["list_name"]
+    if list_name not in ("watchlist", "favorite"):
+        return Response(
+            {"status": "error", "message": "Invalid list type."}, status=402
+        )
+
+    try:
+        movie = Movie.objects.get(name=serializer.validated_data["name"])
+    except Movie.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "Unable to locate movie."}, status=402
+        )
+
+    user_movie_list = UserMovies(
+        user=token_resp["user"], movie=movie, list_type=list_name
+    )
+    user_movie_list.save()
+
+    return Response(
+        {"status": "success", "message": f"{list_name.title()} updated."}, status=200
+    )
+
+
+@api_view(["GET"])
+def get_movie_list(request, list_name):
+    token = request.headers.get("jwt")
+    if not token:
+        return Response(
+            {"status": "error", "message": "Auth token required."}, status=412
+        )
+
+    token_resp = decode_token(token=token)
+    if token_resp["status"] == "error":
+        return Response(token_resp, status=402)
+
+    if list_name not in ("watchlist", "favorite"):
+        return Response(
+            {"status": "error", "message": "Invalid list type."}, status=402
+        )
+
+    try:
+        user_movies = UserMovies.objects.filter(
+            user_id=token_resp["user"].id, list_type=list_name
+        )
+    except UserMovies.DoesNotExist:
+        return Response(
+            {
+                "status": "success",
+                "message": f"No movie in the {list_name}",
+                "data": [],
+            },
+            status=200,
+        )
+
+    serializer = UserMovieSerializer(data=user_movies, many=True)
+    serializer.is_valid()
+
+    return Response(
+        {
+            "status": "success",
+            "message": f"{list_name.title()} fetched successfully.",
+            "data": serializer.data,
+        },
+        status=200,
+    )

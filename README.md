@@ -6,3 +6,4 @@
 - To run server: `python manage.py runserver`
 - Migrate Database: `python manage.py migrate`
 - Generate Migration for Schema: `python manage.py makemigrations api`
+- Check SQL for your migration: `python manage.py sqlmigrate api <migration_name>`
