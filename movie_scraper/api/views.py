@@ -44,7 +44,9 @@ def signup(request):
             },
             status=201,
         )
-    return JsonResponse(serializer.errors, status=400)
+    return JsonResponse(
+        {"status": "error", "message": "", "errors": serializer.errors}, status=400
+    )
 
 
 @api_view(["POST"])
@@ -91,7 +93,9 @@ def fetch_data(request):
     data = JSONParser().parse(request)
     serializer = UrlSerializer(data=data)
     if not serializer.is_valid():
-        return JsonResponse(serializer.errors, status=400)
+        return JsonResponse(
+            {"status": "error", "message": "", "errors": serializer.errors}, status=400
+        )
     movie_info = fetch_movies_from_url(url=serializer.validated_data["url"])
     if movie_info["status"] == "error":
         return JsonResponse(movie_info, status=200)
