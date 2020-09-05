@@ -7,3 +7,7 @@
 - Migrate Database: `python manage.py migrate`
 - Generate Migration for Schema: `python manage.py makemigrations api`
 - Check SQL for your migration: `python manage.py sqlmigrate api <migration_name>`
+
+## Setup
+
+- From project root, run: `pip install -r requirements.txt`

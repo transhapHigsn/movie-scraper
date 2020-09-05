@@ -15,6 +15,7 @@ from .serializers import (
 from .utils import (
     create_token,
     decode_token,
+    fetch_movie_info,
     is_admin,
     is_valid_user,
     fetch_movies_from_url,
@@ -126,14 +127,26 @@ def fetch_movie_by_name(request, name):
         return Response(token_resp, status=403)
 
     try:
-        movie = Movie.objects.get(name=name)
+        movie = Movie.objects.get(name__icontains=name.strip())
     except Movie.DoesNotExist:
         return Response(
             {"status": "error", "message": "Unable to find movie"}, status=400
         )
 
     serializer = MovieSerializer(movie)
-    return Response(serializer.data)
+    data = serializer.data
+
+    extra_info = fetch_movie_info(data["movie_info_url"])
+    data["extra_info"] = extra_info
+
+    return Response(
+        {
+            "status": "success",
+            "message": "Movie info fetched successfully",
+            "data": data,
+        },
+        status=200,
+    )
 
 
 @api_view(["POST", "DELETE"])
@@ -190,7 +203,7 @@ def update_movie_list(request):
 
         return Response(
             {"status": "success", "message": f"{list_name.title()} updated."},
-            status=200,
+            status=201,
         )
 
     elif request.method == "DELETE":

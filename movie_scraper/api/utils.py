@@ -38,6 +38,7 @@ def decode_token(token):
 
 
 def is_admin(user):
+    # TODO: update later.
     return True
 
 
@@ -92,8 +93,8 @@ def fetch_movies_from_url(url):
     return {"status": "success", "data": movie_info}
 
 
-def fetch_movie_info(relative_url, base_url):
-    url = base_url + relative_url
+def fetch_movie_info(url):
+    # url = base_url + relative_url
 
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
