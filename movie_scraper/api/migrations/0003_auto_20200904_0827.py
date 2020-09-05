@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0002_user_email'),
+        ("api", "0002_user_email"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='email',
-            field=models.CharField(default='dummy@api.dev', max_length=256, unique=True),
+            model_name="user",
+            name="email",
+            field=models.CharField(
+                default="dummy@api.dev", max_length=256, unique=True
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='joining_date',
+            model_name="user",
+            name="joining_date",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

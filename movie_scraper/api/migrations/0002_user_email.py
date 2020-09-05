@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0001_initial'),
+        ("api", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='email',
-            field=models.CharField(default='dummy@api.dev', max_length=256),
+            model_name="user",
+            name="email",
+            field=models.CharField(default="dummy@api.dev", max_length=256),
         ),
     ]

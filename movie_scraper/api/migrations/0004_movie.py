@@ -6,19 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0003_auto_20200904_0827'),
+        ("api", "0003_auto_20200904_0827"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Movie',
+            name="Movie",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('year', models.IntegerField(null=True)),
-                ('rating', models.CharField(max_length=5, null=True)),
-                ('poster_url', models.CharField(max_length=512)),
-                ('movie_info_url', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("year", models.IntegerField(null=True)),
+                ("rating", models.CharField(max_length=5, null=True)),
+                ("poster_url", models.CharField(max_length=512)),
+                ("movie_info_url", models.CharField(max_length=200)),
             ],
         ),
     ]
