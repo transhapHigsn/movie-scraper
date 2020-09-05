@@ -16,5 +16,10 @@ urlpatterns = [
     path("get_movie_list/<str:list_name>", views.get_movie_list, name="get_movie_list"),
     path("user_signup", views.signup, name="signup"),
     path("login", views.login, name="login"),
+    path("create_admin_user", views.create_admin_user, name="create_admin"),
+    path(
+        "update_user_permission", views.update_user_permission, name="update_permission"
+    ),
+    path("get_user_permission", views.get_user_permission, name="get_permission"),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]

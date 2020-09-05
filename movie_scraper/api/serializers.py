@@ -1,3 +1,4 @@
+from requests.api import request
 from rest_framework import serializers
 
 from .models import User, Movie, UserMovies
@@ -34,3 +35,14 @@ class UserMovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserMovies
         fields = ["list_type", "movies"]
+
+
+class PermissionSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True, max_length=256)
+    permission_name = serializers.CharField(required=True, max_length=30)
+
+
+class AdminUserSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True, max_length=200)
+    email = serializers.CharField(required=True, max_length=256)
+    code = serializers.CharField(required=True, max_length=30)

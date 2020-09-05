@@ -4,10 +4,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Movie, UserMovies
+from .constants import ADMIN_TOKEN, VALID_MOVIE_LISTS, VALID_PERMISSIONS
+from .models import Movie, UserMovies, UserPermissions
 from .serializers import (
+    AdminUserSerializer,
     MovieListSerializer,
     MovieSerializer,
+    PermissionSerializer,
     UserSerializer,
     UserLoginSerializer,
     UrlSerializer,
@@ -16,7 +19,7 @@ from .utils import (
     create_token,
     decode_token,
     fetch_movie_info,
-    is_admin,
+    has_permission,
     is_valid_user,
     fetch_movies_from_url,
 )
@@ -80,7 +83,7 @@ def fetch_data(request):
     if token_resp["status"] == "error":
         return Response(token_resp, status=403)
 
-    if not is_admin(user=token_resp["user"]):
+    if not has_permission(user=token_resp["user"], permission_required="fetch_movies"):
         return Response(
             {"status": "error", "message": "Permission denied."}, status=403
         )
@@ -169,7 +172,7 @@ def update_movie_list(request):
         )
 
     list_name = serializer.validated_data["list_name"]
-    if list_name not in ("watchlist", "favorite", "watched"):
+    if list_name not in VALID_MOVIE_LISTS:
         return Response(
             {"status": "error", "message": "Invalid list type."}, status=400
         )
@@ -235,7 +238,7 @@ def get_movie_list(request, list_name):
     if token_resp["status"] == "error":
         return Response(token_resp, status=403)
 
-    if list_name not in ("watchlist", "favorite", "watched"):
+    if list_name not in VALID_MOVIE_LISTS:
         return Response(
             {"status": "error", "message": "Invalid list type."}, status=400
         )
@@ -279,4 +282,165 @@ def get_movie_list(request, list_name):
             "data": data,
         },
         status=200,
+    )
+
+
+@api_view(["POST", "DELETE"])
+def update_user_permission(request):
+    token = request.headers.get("jwt")
+    if not token:
+        return Response(
+            {"status": "error", "message": "Auth token required."}, status=412
+        )
+
+    token_resp = decode_token(token=token)
+    if token_resp["status"] == "error":
+        return Response(token_resp, status=403)
+
+    user = token_resp["user"]
+    if not has_permission(user=user, permission_required="admin"):
+        return Response(
+            {"status": "error", "message": "Permission denied."}, status=403
+        )
+
+    data = JSONParser().parse(request)
+    serializer = PermissionSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(
+            {"status": "error", "message": "", "errors": serializer.errors}, status=400
+        )
+
+    permission_name = serializer.validated_data["permission_name"]
+    if permission_name not in VALID_PERMISSIONS:
+        return Response(
+            {"status": "error", "message": "Invalid permission type."}, status=400
+        )
+
+    if not is_valid_user(serializer.validated_data["email"]):
+        return Response(
+            {"status": "error", "message": "Unable to find user from email provided."},
+            status=400,
+        )
+
+    already_present = False
+    try:
+        user_permission = UserPermissions.objects.get(
+            user=user, permission_name=permission_name
+        )
+        already_present = True
+    except UserPermissions.DoesNotExist:
+        user_permission = None
+
+    if request.method == "POST":
+        if already_present:
+            return Response(
+                {"status": "error", "message": "User already have permission."},
+                status=200,
+            )
+
+        user_permission = UserPermissions(user=user, permission_name=permission_name)
+        user_permission.save()
+
+        return Response(
+            {
+                "status": "success",
+                "message": f"{permission_name} is provided to {user.name}.",
+            },
+            status=201,
+        )
+
+    elif request.method == "DELETE":
+        if not already_present:
+            return Response(
+                {"status": "error", "message": "User does not have the permission."},
+                status=200,
+            )
+
+        user_permission.delete()
+        return Response(
+            {
+                "status": "success",
+                "message": f"{user_permission.permission_name} is successfully removed from {user.name}.",
+            },
+            status=200,
+        )
+
+
+@api_view(["GET"])
+def get_user_permission(request, email):
+    token = request.headers.get("jwt")
+    if not token:
+        return Response(
+            {"status": "error", "message": "Auth token required."}, status=412
+        )
+
+    token_resp = decode_token(token=token)
+    if token_resp["status"] == "error":
+        return Response(token_resp, status=403)
+
+    if not has_permission(user=token_resp["user"], permission_required="admin"):
+        return Response(
+            {"status": "error", "message": "Permission denied."}, status=403
+        )
+
+    user_resp = is_valid_user(email=email)
+    if user_resp["status"] == "error":
+        return Response(user_resp, status=400)
+
+    user = user_resp["user"]
+    data = {"name": user.name, "email": user.email, "permissions": []}
+
+    user_permissions = UserPermissions.objects.filter(user=user_resp["user"])
+
+    for permission in user_permissions:
+        data["permissions"].append(permission.permission_name)
+
+    return Response(
+        {
+            "status": "success",
+            "message": f"Permissions fetched successfully.",
+            "data": data,
+        },
+        status=200,
+    )
+
+
+@api_view(["POST"])
+def create_admin_user(request):
+    data = JSONParser().parse(request)
+    serializer = AdminUserSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(
+            {"status": "error", "message": "", "errors": serializer.errors}, status=400
+        )
+
+    if serializer.validated_data["code"] != ADMIN_TOKEN:
+        return Response({"status": "error", "message": "Invalid token"}, status=403)
+
+    try:
+        UserPermissions.objects.get(permission_name="admin")
+        return Response(
+            {"status": "error", "message": "Permission Denied."}, status=403
+        )
+    except UserPermissions.DoesNotExist:
+        pass
+
+    user_serializer = UserSerializer(data=data)
+    user_serializer.is_valid()
+    user_serializer.save()  # not sure how to flush/temporarily store data in db, so directly committing.
+
+    email = serializer.validated_data["email"]
+    user_resp = is_valid_user(email=email)
+
+    user_permission = UserPermissions(user=user_resp["user"], permission_name="admin")
+    user_permission.save()
+
+    encoded_jwt = create_token(email=serializer.validated_data["email"])
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": "User added suucessfully.",
+            "token": encoded_jwt,
+        },
+        status=201,
     )

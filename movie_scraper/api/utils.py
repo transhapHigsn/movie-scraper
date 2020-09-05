@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import jwt
 import requests
 
-from .models import User
+from .models import User, UserPermissions
 from .serializers import MovieSerializer
 
 SECRET_KEY = "5(@2#r4a5(4uig*hokxeq56!-9e_pz=dx660q8a%7w%8x7)ycd"
@@ -37,9 +37,12 @@ def decode_token(token):
     return {"status": "success", "data": info, "user": user}
 
 
-def is_admin(user):
-    # TODO: update later.
-    return True
+def has_permission(user, permission_required):
+    try:
+        UserPermissions.objects.get(user=user, permission_name=permission_required)
+        return True
+    except UserPermissions.DoesNotExist:
+        return False
 
 
 def is_valid_user(email):
