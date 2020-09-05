@@ -1,6 +1,5 @@
 from django.http import HttpResponse, JsonResponse
 
-from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,7 +8,6 @@ from .models import Movie, UserMovies
 from .serializers import (
     MovieListSerializer,
     MovieSerializer,
-    UserMovieSerializer,
     UserSerializer,
     UserLoginSerializer,
     UrlSerializer,
@@ -59,7 +57,14 @@ def login(request):
             {"status": "success", "message": "User login successful.", "token": token},
             status=201,
         )
-    return JsonResponse(serializer.errors, status=400)
+    return JsonResponse(
+        {
+            "status": "error",
+            "message": "Error while creating login token",
+            "errors": serializer.errors,
+        },
+        status=400,
+    )
 
 
 @api_view(["POST"])
@@ -72,11 +77,11 @@ def fetch_data(request):
 
     token_resp = decode_token(token=token)
     if token_resp["status"] == "error":
-        return Response(token_resp, status=402)
+        return Response(token_resp, status=403)
 
     if not is_admin(user=token_resp["user"]):
         return Response(
-            {"status": "error", "message": "Permission denied."}, status=412
+            {"status": "error", "message": "Permission denied."}, status=403
         )
 
     data = JSONParser().parse(request)
@@ -101,7 +106,7 @@ def fetch_movies(request):
 
     token_resp = decode_token(token=token)
     if token_resp["status"] == "error":
-        return Response(token_resp, status=402)
+        return Response(token_resp, status=403)
 
     movies = Movie.objects.all()
     serializer = MovieSerializer(movies, many=True)
@@ -118,12 +123,14 @@ def fetch_movie_by_name(request, name):
 
     token_resp = decode_token(token=token)
     if token_resp["status"] == "error":
-        return Response(token_resp, status=402)
+        return Response(token_resp, status=403)
 
     try:
         movie = Movie.objects.get(name=name)
     except Movie.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"status": "error", "message": "Unable to find movie"}, status=400
+        )
 
     serializer = MovieSerializer(movie)
     return Response(serializer.data)
@@ -139,26 +146,26 @@ def update_movie_list(request):
 
     token_resp = decode_token(token=token)
     if token_resp["status"] == "error":
-        return Response(token_resp, status=402)
+        return Response(token_resp, status=403)
 
     data = JSONParser().parse(request)
     serializer = MovieListSerializer(data=data)
     if not serializer.is_valid():
         return Response(
-            {"status": "error", "message": "", "errors": serializer.errors}, status=402
+            {"status": "error", "message": "", "errors": serializer.errors}, status=400
         )
 
     list_name = serializer.validated_data["list_name"]
-    if list_name not in ("watchlist", "favorite"):
+    if list_name not in ("watchlist", "favorite", "watched"):
         return Response(
-            {"status": "error", "message": "Invalid list type."}, status=402
+            {"status": "error", "message": "Invalid list type."}, status=400
         )
 
     try:
         movie = Movie.objects.get(name=serializer.validated_data["name"])
     except Movie.DoesNotExist:
         return Response(
-            {"status": "error", "message": "Unable to locate movie."}, status=402
+            {"status": "error", "message": "Unable to locate movie."}, status=400
         )
 
     user = token_resp["user"]
@@ -213,11 +220,11 @@ def get_movie_list(request, list_name):
 
     token_resp = decode_token(token=token)
     if token_resp["status"] == "error":
-        return Response(token_resp, status=402)
+        return Response(token_resp, status=403)
 
-    if list_name not in ("watchlist", "favorite"):
+    if list_name not in ("watchlist", "favorite", "watched"):
         return Response(
-            {"status": "error", "message": "Invalid list type."}, status=402
+            {"status": "error", "message": "Invalid list type."}, status=400
         )
 
     data = {
