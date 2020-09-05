@@ -11,3 +11,5 @@
 ## Setup
 
 - From project root, run: `pip install -r requirements.txt`
+
+Note: There is a one time use code `TYH6430QV` for creating admin user. Further, admin actions should be performed by user created using above code.
