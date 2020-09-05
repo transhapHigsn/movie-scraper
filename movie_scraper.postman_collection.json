@@ -1,0 +1,430 @@
+{
+	"info": {
+		"_postman_id": "33cb8329-7650-47c0-ac49-38b6d074a59b",
+		"name": "movie_Scraper",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Admin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin@movie_scraper.com\",\n    \"code\": \"TYH6430QV\",\n    \"name\": \"Admin\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/create_admin_user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"create_admin_user"
+					]
+				},
+				"description": "Create admin user"
+			},
+			"response": []
+		},
+		{
+			"name": "Add fetch_movies permission",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin@movie_scraper.com\",\n    \"permission_name\": \"fetch_movies\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/update_user_permission",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"update_user_permission"
+					]
+				},
+				"description": "Give Admin user permission to scrape and store data"
+			},
+			"response": []
+		},
+		{
+			"name": "Scrape IMDB data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"url\": \"https://www.imdb.com/india/top-rated-indian-movies/\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/movie",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"movie"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get movie",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/movie_by_name/Aamir",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"movie_by_name",
+						"Aamir"
+					]
+				},
+				"description": "Fetch movie by name"
+			},
+			"response": []
+		},
+		{
+			"name": "Add to watch list",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Aamir\",\n    \"list_name\": \"watchlist\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/update_movie_list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"update_movie_list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove from watchlist",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Aamir\",\n    \"list_name\": \"watchlist\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/update_movie_list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"update_movie_list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add to watched",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Aamir\",\n    \"list_name\": \"watched\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/update_movie_list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"update_movie_list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove from watched",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Aamir\",\n    \"list_name\": \"watched\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/update_movie_list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"update_movie_list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get watch list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/get_movie_list/watchlist",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_movie_list",
+						"watchlist"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Watched List",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/get_movie_list/watched",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_movie_list",
+						"watched"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all movies",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "jwt",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdvZEBoZWF2ZW4uY29tIiwiZXhwIjoxNTk5Mjk1MDUzfQ.Ec9buuvcdv1kNcOEXsdT6EdzB936kwUo6YOJWrV7rdI",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/api/fetch_movies",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"fetch_movies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Signup non admin user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/user_signup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"user_signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login user",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"hello\",\n    \"email\": \"hello@yellow.com\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
