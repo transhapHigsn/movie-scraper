@@ -20,6 +20,9 @@ class UserMovies(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     list_type = models.CharField(null=False, blank=False, max_length=30)
 
+    class Meta:
+        unique_together = ["user", "movie"]
+
 
 class UserPermissions(models.Model):
     permission_name = models.CharField(max_length=30, null=False, blank=False)

@@ -129,8 +129,8 @@ def fetch_movie_by_name(request, name):
     return Response(serializer.data)
 
 
-@api_view(["POST"])
-def add_movie_to_list(request):
+@api_view(["POST", "DELETE"])
+def update_movie_list(request):
     token = request.headers.get("jwt")
     if not token:
         return Response(
@@ -161,14 +161,46 @@ def add_movie_to_list(request):
             {"status": "error", "message": "Unable to locate movie."}, status=402
         )
 
-    user_movie_list = UserMovies(
-        user=token_resp["user"], movie=movie, list_type=list_name
-    )
-    user_movie_list.save()
+    user = token_resp["user"]
+    already_present = False
+    try:
+        user_movie = UserMovies.objects.get(user=user, movie=movie)
+        already_present = True
+    except UserMovies.DoesNotExist:
+        user_movie = None
 
-    return Response(
-        {"status": "success", "message": f"{list_name.title()} updated."}, status=200
-    )
+    if request.method == "POST":
+        if already_present:
+            return Response(
+                {"status": "error", "message": "Movie is already added to the list."},
+                status=200,
+            )
+
+        user_movie_list = UserMovies(
+            user=token_resp["user"], movie=movie, list_type=list_name
+        )
+        user_movie_list.save()
+
+        return Response(
+            {"status": "success", "message": f"{list_name.title()} updated."},
+            status=200,
+        )
+
+    elif request.method == "DELETE":
+        if not already_present:
+            return Response(
+                {"status": "error", "message": "Movie is not present in the list."},
+                status=200,
+            )
+
+        user_movie.delete()
+        return Response(
+            {
+                "status": "success",
+                "message": f"{user_movie.movie.name} is successfully removed from {list_name}.",
+            },
+            status=200,
+        )
 
 
 @api_view(["GET"])
@@ -188,6 +220,12 @@ def get_movie_list(request, list_name):
             {"status": "error", "message": "Invalid list type."}, status=402
         )
 
+    data = {
+        "movies": [],
+        "list_name": list_name,
+        "user_name": token_resp["user"].name,
+        "email": token_resp["user"].email,
+    }
     try:
         user_movies = UserMovies.objects.filter(
             user_id=token_resp["user"].id, list_type=list_name
@@ -197,19 +235,28 @@ def get_movie_list(request, list_name):
             {
                 "status": "success",
                 "message": f"No movie in the {list_name}",
-                "data": [],
+                "data": data,
             },
             status=200,
         )
 
-    serializer = UserMovieSerializer(data=user_movies, many=True)
-    serializer.is_valid()
+    for _movie in user_movies:
+        movie = _movie.movie
+        data["movies"].append(
+            {
+                "name": movie.name,
+                "year": movie.year,
+                "rating": movie.rating,
+                "poster_url": movie.poster_url,
+                "movie_info_url": movie.movie_info_url,
+            }
+        )
 
     return Response(
         {
             "status": "success",
             "message": f"{list_name.title()} fetched successfully.",
-            "data": serializer.data,
+            "data": data,
         },
         status=200,
     )
